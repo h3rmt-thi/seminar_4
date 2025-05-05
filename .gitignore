@@ -1,0 +1,4 @@
+beamer/out
+beamer/out-2
+beamer/*.pdf
+code/spectre/out

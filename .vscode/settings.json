@@ -1,0 +1,15 @@
+{
+    "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.formatting.latexindent.args": [
+        "run",
+        "#latex-format"
+    ],
+    "latex-workshop.formatting.latexindent.path": "nix",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.external.build.command": "nix",
+    "latex-workshop.latex.external.build.args": [
+        "run",
+        "#latex-build"
+    ],
+    "latex-workshop.latex.autoBuild.interval": 4000
+}
