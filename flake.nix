@@ -42,9 +42,19 @@
             text = ''
               echo "Starting presentation with pdfpc..."
               sleep 1
+
+              hyprctl dispatch workspace 2 # focus empty workspace
+              (sleep 1; hyprctl dispatch focusmonitor eDP-1; echo "focus sec monitor")&
+
+              # close after open (only converts notes file to json)
               pdfpc -d 60 -g -R ./beamer/out/Beamer.pdfpc --page-transition "fade:0.4" --note-format=markdown ./beamer/out/Beamer.pdf
               jq '.disableMarkdown = true' ./beamer/out/Beamer.pdfpc > ./beamer/out/Beamer.tmp && mv ./beamer/out/Beamer.tmp ./beamer/out/Beamer.pdfpc
+              
+              sleep 0.5
+              (sleep 1; hyprctl dispatch focusmonitor eDP-1; echo "focus sec monitor")&
               pdfpc -d 60 -g -R ./beamer/out/Beamer.pdfpc --page-transition "fade:0.4" --note-format=markdown ./beamer/out/Beamer.pdf
+              
+              hyprctl dispatch workspace 3 # focus vscode
             '';
           };
 
