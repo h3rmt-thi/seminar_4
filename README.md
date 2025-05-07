@@ -1,14 +1,19 @@
+Enter Env:
+```bash
+nix develop --command $SHELL
+```
+
 Build Latex: 
 ```bash
-nix run '.#latex-build'
+latex-build
 ```
 
 Format Latex:
 ```bash
-nix run '.#latex-format'
+latex-format
 ```
 
 Run spectre:
 ```bash
-nix run '.#run-spectre'
+run-spectre
 ```

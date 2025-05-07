@@ -1,32 +1,14 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{minted} % Syntax highlighting
-\usepackage{tcolorbox} % used in notes pages
 \usepackage{tikz} % used to position images
+\usepackage{pdfpcnotes} % special notes for pdfpc
 
 \usetheme{Boadilla}
 \usecolortheme{dolphin}
 \useinnertheme{circles}
 \useoutertheme{infolines}
 
-\defbeamertemplate*{note page}{custom}
-{%
-\begin{columns}
-  \begin{column}{0.5\textwidth}
-    \begin{tcolorbox}[left=0mm,right=0mm,colback=blue!10!white,colframe=blue!30!white,width=\textwidth]
-      \textbf{\insertsection}
-      \linebreak 
-      \insertsubsection
-    \end{tcolorbox}
-  \end{column}
-  \begin{column}{0.5\textwidth}
-    \begin{tcolorbox}[left=0mm,right=0mm,top=0mm,bottom=0mm,boxsep=0mm,colframe=black,width=1.1\textwidth]
-      \insertslideintonotes{0.44}
-    \end{tcolorbox}
-  \end{column}
-\end{columns}
-\insertnote
-}
 
 % \newcommand{\customnote}[1]{%
 %   \note{>\ #1\newline}%
@@ -34,5 +16,6 @@
 
 \newcommand<>{\customnote}[1]{%
   \note#2{>\ #1\newline}%
+  \pnote{#1}%
 }
 
