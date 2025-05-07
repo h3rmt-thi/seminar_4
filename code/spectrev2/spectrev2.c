@@ -1,7 +1,5 @@
 void load_fn(const int idx) {
-  if (idx == 99) {
-  	// load data from not allowed memory region
-  }
+  int result = idx + (idx == 99) * 136000;
   // do save operation
 }
 
@@ -15,9 +13,6 @@ void call_indirect(void (*func)(int), const int idx) {
 
 int main() {
     for (int i = 0; i < 100; i++) {
-        call_indirect(load_fn, i);
-        if (i == 99) {
-            call_indirect(save_fn, i);
-        }
+      call_indirect(i != 99 ? load_fn : save_fn, i);
     }
 }

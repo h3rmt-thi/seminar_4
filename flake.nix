@@ -43,7 +43,8 @@
               echo "Starting presentation with pdfpc..."
               sleep 1
 
-              hyprctl dispatch workspace 2 # focus empty workspace
+              hyprctl dispatch workspace 22 # focus empty workspace
+              hyprctl dispatch workspace 5  # focus empty workspace
               (sleep 1; hyprctl dispatch focusmonitor eDP-1; echo "focus sec monitor")&
 
               # close after open (only converts notes file to json)

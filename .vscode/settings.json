@@ -11,5 +11,12 @@
         "run",
         "#latex-build"
     ],
-    "latex-workshop.latex.autoBuild.interval": 4000
+    "latex-workshop.latex.autoBuild.interval": 4000,
+    "files.associations": {
+        "string.h": "c",
+        "stdbool.h": "c",
+        "setjmp.h": "c",
+        "unlock.h": "c",
+        "attacker.h": "c"
+    }
 }

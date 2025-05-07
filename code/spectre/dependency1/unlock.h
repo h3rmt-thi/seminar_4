@@ -1,3 +1,4 @@
 #pragma once
+#include <stdbool.h>
 
-void unlock();
+void unlock(bool free, bool override);
