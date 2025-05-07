@@ -36,7 +36,7 @@
 	\begin{itemize}
 		\item \textbf{Ziel:} Arbeitsspeicher auslesen
 		\item Speicherisolation durch Betriebssystem wird umgangen
-		      \customnote{OS separiert Speicherbereiche, damit Programme nicht aufeinander zugreifen können. MMU (Memory Management Unit)}
+		      \customnote{*OS* separiert Speicherbereiche, damit Programme <br>nicht aufeinander zugreifen können. MMU (Memory Management Unit)}
 		      \customnote{In Prozessen mit `mprotect` oder V8 JavaScript Isolates}
 		      \customnote{Ohne mehr rechte (sudo)}
 		\item Zugriff auf fremden Speicher (Programme, Kernel, VMs)
@@ -160,24 +160,28 @@ for (int i = 0; i < 10; i++) {
 		\begin{itemize}
 			\item \textbf{Gegenmaßnahmen:}
 			      \begin{itemize}
-				      \item Linux: \textit{lfence}, \textit{nospec}
-				            \customnote<4>{lfence: Warten bis alle vorherigen mem loads abgeschlossen sind => CPU bricht Spec Exec ab}
-				            \customnote<4>{nospec: Abbrechen von Spec Exec wenn array access out of bounds}
-				      \item Firefox, Webkit: Timing Genauichkeit reduziert
-				            \customnote<4>{Damit Cache Timing nicht mehr möglich ist}
-				      \item Chrome: Sandboxing
-				            \customnote<4>{Eingenen prozess pro Tab}
-				            \customnote<4>{+ JIT maskiert pointer auf JS arrays und Strings}
-				      \item<5> IBRS (Indirection Branch Restricted Speculation)
-				            \customnote<5>{Hardware fixes}
-				            \customnote<5>{Braucht Microcode Suport, kernel aktiviert es}
-				            \customnote<5>{Verhindert Spekulation in indirekten Sprüngen}
-				            \customnote<5>{https://lwn.net/Articles/743019/}
-				      \item<5> STIBP (Single Thread Indirect Branch Predictors)
-				            \customnote<5>{Kein Sharing der BPU zwischen Threads}
-				            \customnote<5>{https://shorturl.at/MkOs6}
-				      \item<5> IBPB (Indirect Branch Prediction Barrier)
-				            \customnote<5>{Verhindet Manipulieren von BPU über Ring switches}
+				      \begin{onlyenv}<4-5>
+					      \item Linux: \textit{lfence}, \textit{nospec}
+					      \customnote<4>{lfence: Warten bis alle vorherigen mem loads abgeschlossen sind => CPU bricht Spec Exec ab}
+					      \customnote<4>{nospec: Abbrechen von Spec Exec wenn array access out of bounds}
+					      \item Firefox, Webkit: Timing Genauichkeit reduziert
+					      \customnote<4>{Damit Cache Timing nicht mehr möglich ist}
+					      \item Chrome: Sandboxing
+					      \customnote<4>{Eingenen prozess pro Tab}
+					      \customnote<4>{+JIT maskiert pointer auf JS arrays und Strings}
+				      \end{onlyenv}
+				      \begin{onlyenv}<5>
+					      \item IBRS (Indirection Branch Restricted Speculation)
+					      \customnote<5>{Hardware fixes}
+					      \customnote<5>{Braucht Microcode Suport, kernel aktiviert es}
+					      \customnote<5>{Verhindert Spekulation in indirekten Sprüngen}
+					      \customnote<5>{https://lwn.net/Articles/743019/}
+					      \item STIBP (Single Thread Indirect Branch Predictors)
+					      \customnote<5>{Kein Sharing der BPU zwischen Threads}
+					      \customnote<5>{https://shorturl.at/MkOs6}
+					      \item IBPB (Indirect Branch Prediction Barrier)
+					      \customnote<5>{Verhindet Manipulieren von BPU über Ring switches}
+				      \end{onlyenv}
 			      \end{itemize}
 		\end{itemize}
 	\end{onlyenv}
@@ -227,11 +231,11 @@ for (int i = 0; i < 10; i++) {
 			\item \textbf{Gegenmaßnahmen:}
 			      \begin{itemize}
 				      \item EEC (Error-Correcting Code)
-				            \customnote{Detektion und Correction, normal manachmal Detection}
-				            \customnote{Ein extra Bit pro Byte}
+				            \customnote<2->{Detektion und Correction, normal manachmal Detection}
+				            \customnote<2->{Ein extra Bit pro Byte}
 				      \item TRR (Target Row Refresh)
-				            \customnote{Automatisches Refreshen von benachbarten Zeilen bei häufigem Zugriff}
-				            \customnote{Optional im DDR4 Standard, propietär}
+				            \customnote<2->{Automatisches Refreshen von benachbarten Zeilen bei häufigem Zugriff}
+				            \customnote<2->{Optional im DDR4 Standard, propietär}
 			      \end{itemize}
 		\end{itemize}
 	\end{onlyenv}

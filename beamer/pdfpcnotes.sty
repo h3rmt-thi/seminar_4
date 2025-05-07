@@ -43,25 +43,23 @@
 \endgroup
 
 
-\def\lastframenumber{0}
-
 % define command \pnote{} that works like note but
 % additionally writes notes to file in pdfpc readable format
-\newcommand{\pnote}[1]{%
-	% keep normal notes working
-	\note{#1}%
+\newcommand<>{\customnote}[1]{%
+    \only#2{%
+		% if frame changed - write a new header
+		% \ifdim\lastpn pt<\insertpagenumber pt
+		\ifnum\lastpn<\insertpagenumber\relax%
+			\begingroup
+				\let\#\hashchar
+				\immediate\write\pdfpcnotesfile{\#\#\# \insertpagenumber}%
+			\endgroup
+			\renewcommand{\lastpn}{\insertpagenumber}
+		\fi%
 
-	% if frame changed - write a new header
-	\ifdim\theframenumber pt>\lastframenumber pt
-		\let\lastframenumber\theframenumber
-		\begingroup
-			\let\#\hashchar
-			\immediate\write\pdfpcnotesfile{\#\#\# \theframenumber}%
-		\endgroup
-	\fi
-
-	% write note to file
-	\immediate\write\pdfpcnotesfile{\unexpanded{#1}}%
+		% write note to file
+		\immediate\write\pdfpcnotesfile{\unexpanded{- #1<br>}}%
+	}
 }
 % close file on \end{document}
 \AtEndDocument{%

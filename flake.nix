@@ -1,6 +1,6 @@
 {
   description = "Flake for LaTeX formatting and Spectre vulnerability demonstration";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }:
     let
@@ -33,15 +33,18 @@
                 pdflatex -output-directory=./out -halt-on-error -interaction=nonstopmode -shell-escape "./Beamer.tex"
               fi
               pdflatex -output-directory=./out -halt-on-error -interaction=nonstopmode -shell-escape "./Beamer.tex"
+
             '';
           };
 
           present-pdf = pkgs.writeShellApplication {
             name = "present-pdf";
             text = ''
-              cd ./beamer/out
               echo "Starting presentation with pdfpc..."
-              ${pkgs.pdfpc}/bin/pdfpc -d 60 --page-transition "fade:0.4" Beamer.pdf
+              sleep 1
+              pdfpc -d 60 -g -R ./beamer/out/Beamer.pdfpc --page-transition "fade:0.4" --note-format=markdown ./beamer/out/Beamer.pdf
+              jq '.disableMarkdown = true' ./beamer/out/Beamer.pdfpc > ./beamer/out/Beamer.tmp && mv ./beamer/out/Beamer.tmp ./beamer/out/Beamer.pdfpc
+              pdfpc -d 60 -g -R ./beamer/out/Beamer.pdfpc --page-transition "fade:0.4" --note-format=markdown ./beamer/out/Beamer.pdf
             '';
           };
 
@@ -80,6 +83,8 @@
           self.packages.${system}.latex-build
           self.packages.${system}.run-spectre
           self.packages.${system}.present-pdf
+          # idk why but pdfpc from nix doesnt render the notes
+          # pkgs.pdfpc
         ];
       };
     };

@@ -17,3 +17,8 @@ Run spectre:
 ```bash
 run-spectre
 ```
+
+Present:
+```bash
+present-pdf
+```
