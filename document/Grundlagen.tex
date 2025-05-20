@@ -1,0 +1,30 @@
+\section{Grundlagen moderner CPU-Architekturen}
+\label{sec:grundlagen-moderner-cpu-architekturen}
+
+Moderne Prozessoren sind schnell, Taktraten von 5 GHz sind keine Seltenheit, 10 oder mehr Kerne sind Standard~\cite{ryzen_9}.
+Diese Geschwindigkeit nützt allerdings wenig, wenn das Laden von Daten aus dem RAM mehrere 100 Zyklen dauert und die CPU in der Zeit nichts tun kann.
+Um solche Situationen zu vermeiden, verwenden moderne Prozessoren verschiedene Techniken, um die Ausführung von Befehlen zu beschleunigen. \\
+Im Folgenden werden verschiedene Techniken vorgestellt, die für die nachfolgenden Angriffe von Bedeutung sind.
+
+\subsection{Cache}
+\label{subsec:cache}
+
+Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speicher ein.
+Diese Caches sind direkt in der CPU integriert und bieten deutlich schnelleren Zugriff auf Daten aus dem Arbeitsspeicher (RAM).
+Wird ein benötigter Wert nicht im Cache gefunden (Cache Miss), muss er aus dem langsameren RAM nachgeladen werden.
+Die CPU kopiert dabei die entsprechenden Datenblöcke (Cache Lines) aus dem RAM in den Cache, sodass zukünftige Zugriffe schneller erfolgen können.
+Hierbei wird, falls notwendig, ein Cache-Eintrag überschrieben, sodass der alte Wert verloren geht.
+
+\subsection{Out-of-Order Execution}
+\label{subsec:out-of-order-execution}
+
+Moderne Prozessoren sind in der Lage die Reihenfolge, in der Befehle ausgeführt werden, zur Laufzeit des Programms zu ändern.
+Wenn beispielsweise ein Befehl auf einen Wert wartet, der sich im RAM befindet, würde dies normalerweise dazu führen, dass keine nachfolgenden Befehle ausgeführt werden können, bis der Wert verfügbar ist und der Befehl ausgeführt werden kann.
+Solange ein Befehl auf Werte warten muss, wird dieser deshalb auf eine Warteliste gesetzt.
+Des Weiteren ist es möglich, unabhängige Befehle, wie zum Beispiel eine Multiplikation und eine Division, die verschiedene funktionale Einheiten der CPU nutzen, gleichzeitig auszuführen.
+Dies führt zu einer höheren Auslastung der CPU und einer schnelleren Ausführung des Programms.
+
+\subsection{Speculative Execution}
+\label{subsec:speculative-execution}
+
+C

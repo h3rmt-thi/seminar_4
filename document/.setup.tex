@@ -1,0 +1,35 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage[ngerman]{babel}
+
+\usepackage{csquotes} % For proper quotation marks
+\usepackage{microtype} % Better typography (text placement etc)
+\usepackage{lmodern} % Better font rendering
+\usepackage[
+    backend=biber,
+    style=numeric-verb,
+    sortlocale=de_DE,
+    natbib=true,
+    url=true,
+    doi=true,
+    eprint=false
+]{biblatex} % Biblatex for bibliography management
+\addbibresource{bibliography.bib}
+
+\usepackage{setspace} % For line spacing
+\onehalfspacing
+
+% load later
+\usepackage{hyperref} % Hyperlinks in the document
+\hypersetup{
+    linkcolor=black,
+    citecolor=blue,
+    urlcolor=blue,
+    colorlinks=true,
+}
+
+% load last
+\usepackage[a4paper,margin=3.3cm]{geometry} % Page size and margins
+
+

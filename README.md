@@ -5,20 +5,22 @@ nix develop --command $SHELL
 
 Build Latex: 
 ```bash
-latex-build
+beamer-build
+document-build
 ```
 
 Format Latex:
 ```bash
-latex-format
+beamer-format
+document-format
 ```
 
 Run spectre:
 ```bash
-run-spectre
+spectre-run
 ```
 
 Present:
 ```bash
-present-pdf
+beamer-present
 ```
