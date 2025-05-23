@@ -9,7 +9,7 @@ Im Folgenden werden verschiedene Techniken vorgestellt, die für die nachfolgend
 \subsection{Cache}
 \label{subsec:cache}
 
-Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speicher ein.
+Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speichein.
 Diese Caches sind direkt in der CPU integriert und bieten deutlich schnelleren Zugriff auf Daten aus dem Arbeitsspeicher (RAM).
 Wird ein benötigter Wert nicht im Cache gefunden (Cache Miss), muss er aus dem langsameren RAM nachgeladen werden.
 Die CPU kopiert dabei die entsprechenden Datenblöcke (Cache Lines) aus dem RAM in den Cache, sodass zukünftige Zugriffe schneller erfolgen können.
@@ -27,4 +27,13 @@ Dies führt zu einer höheren Auslastung der CPU und einer schnelleren Ausführu
 \subsection{Speculative Execution}
 \label{subsec:speculative-execution}
 
-C
+Die effektivste Methode zur Beschleunigung der Ausführung von Programmen ist jedoch Werte bereits im Voraus zu berechnen oder Werte im Voraus zu laden.
+Ein Beispiel: In einer Schleife kann die CPU bereits vorab Befehle ausführen, noch bevor feststeht, ob die Schleife tatsächlich durchlaufen wird.
+Sobald erkannt wurde, dass die Schleife tatsächlich ausgeführt werden soll, liegen die Ergebnisse dieser Befehle bereits vor und das Programm kann ohne Verzögerung an einer nachfolgenden Stelle fortgesetzt werden.
+Werden die berechneten Ergebnisse nicht benötigt, werden sie verworfen und die CPU muss den ursprünglichen Programmablauf fortsetzen.
+Dies soll (im Idealfall) keine Auswirkungen auf die Ausführung des Programms haben, da die CPU den ursprünglichen Programmablauf fortsetzen kann. \\
+Um die bestmöglichen Vorhersagen über den Programmablauf zu treffen, verwendet die CPU verschiedene Techniken, wie zum Beispiel Branch Prediction.
+Branch Prediction ist eine Technik, mit der die CPU versucht, den Ausgang von Branches(=Verzweigungen) vorherzusagen.
+Ein Beispiel für eine Branch ist z.~B.~eine if-Anweisung oder eine Schleife.
+Hier muss zur Laufzeit entschieden werden, ob der Code innerhalb der if-Anweisung oder der Schleife ausgeführt werden soll oder nicht.
+Die BPU (Branch Prediction Unit) der CPU analysiert den Programmablauf und versucht, bereits im Voraus zu bestimmen, welchen Weg eine Verzweigung am vermutlich nehmen wird, um den wahrscheinlichsten Ausführungsweg ausführen zu lassen.
