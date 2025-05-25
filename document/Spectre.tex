@@ -10,7 +10,7 @@ Um diese Daten in den Cache zu laden, nutzt Spectre die spekulative Ausführung 
 Die spekulative Ausführung erlaubt das Laden dieser Daten, da die Überprüfung, ob der Zugriff auf diese Daten überhaupt legitim ist, erst zur \enquote{tatsächlichen} und nicht spekulativen Ausführung erfolgt.
 
 \subsection{Vorgehensweise \cite{kocher2018spectre}}
-\label{subsec:vorgehensweise}
+\label{subsec:spectre_vorgehensweise}
 \begin{itemize}
 	\item \textbf{1. Schritt:} 2 Arrays mit verschiedenen Größen (\texttt{array1: 16 Elemente, array2: 265 * 512 Elemente}) werden allokiert, die später für spekulative Zugriffe und Cache-Messungen verwendet werden.
 	\item \textbf{2. Schritt:} Es wird berechnet, wie weit der auszulesende Speicherbereich vom Anfang von \texttt{array1} entfernt ist.
@@ -21,7 +21,7 @@ Die spekulative Ausführung erlaubt das Laden dieser Daten, da die Überprüfung
 \begin{minipage}{0.58\textwidth}
 	\begin{itemize}
 		\item \textbf{3. Schritt:} Spectre nutzt folgenden Code, um den Cache zu trainieren: \\
-		      \phantomsection\label{itm:step3_code}
+		      \phantomsection\label{itm:spectre_step3_code}
 		      \texttt{array2[array1[x] * 512]} \\
 		      Dieser Aufruf nutzt den Wert, der sich in array1 an der Stelle x befindet (multipliziert mit 512), um auf einen Wert in array2 zuzugreifen.
 		      Der Wert, welcher sich tatsächlich in array2 befindet, ist hier irrelevant.
@@ -37,7 +37,7 @@ Die spekulative Ausführung erlaubt das Laden dieser Daten, da die Überprüfung
 
 
 \begin{itemize}
-	\item \textbf{4. Schritt:}\phantomsection\label{itm:step4} Die oben genannte Zeile wird mehrmals in einer Schleife ausgeführt, um den Branch Predictor zu trainieren.
+	\item \textbf{4. Schritt:}\phantomsection\label{itm:spectre_step4} Die oben genannte Zeile wird mehrmals in einer Schleife ausgeführt, um den Branch Predictor zu trainieren.
 	      Hierbei werden \texttt{x} Werte verwendet, die innerhalb des \texttt{arrays1} liegen.
 	      Dies lässt die CPU vermuten, dass zukünftige Durchläufe der Schleife ebenfalls diesen Aufruf ausführen werden, was wiederum zur Folge hat, dass für zukünftige \texttt{x} Werte der Aufruf bereits spekulativ ausgeführt wird.
 	\item \textbf{5. Schritt:} Der Wert \texttt{x} wird auf einen Wert gesetzt, der sich nicht im \texttt{array1} befindet.
@@ -57,11 +57,11 @@ Die spekulative Ausführung erlaubt das Laden dieser Daten, da die Überprüfung
 	      Wird nun gemessen, dass der Zugriff auf \texttt{array2[4 * 512]} deutlich schneller ist als der Zugriff auf andere Elemente wie \texttt{array2[0 * 512]} oder \texttt{array2[5 * 512]} so kann davon ausgegangen werden, dass sich an der Stelle \texttt{array1[x]} der Wert \texttt{4} befunden hat.
 	\item \textbf{8. Schritt:} Der soeben ermittelte Wert wird gespeichert und der \texttt{x} Wert um 255 Bits erhöht.
 	      Dadurch wird der nächste Durchlauf die nächsten 8 Bytes des Zielbereiches auslesen.
-	      Schlussendlich wird zu \hyperref[itm:step4]{\underline{Schritt 4}} zurückgekehrt.
+	      Schlussendlich wird zu \hyperref[itm:spectre_step4]{\underline{Schritt 4}} zurückgekehrt.
 \end{itemize}
 
 \subsection{Spectre-V2}
-\label{subsec:spectre-v2}
+\label{subsec:spectre_spectre-v2}
 
 Die oben beschriebene Variante von Spectre ist nur eine von vielen verschiedenen Varianten und Weiterentwicklungen.
 Die bekannteste Weiterentwicklung ist Spectre-V2~\cite{spec_v2}, die sich gegen den Branch Predictor richtet.
@@ -75,10 +75,11 @@ Wenn die CPU nun ein anderes Programm ausführt, in dem sich eine Branch befinde
 Durch unser Training wird der Branch Predictor jetzt einen Sprung vorhersagen, der im Programm so tatsächlich nie ausgeführt worden wäre.
 Dies ermöglicht es uns, wenn auch nur spekulativ, den Verlauf des Programmes zu ändern. \\
 Um jetzt Daten in den Cache laden zu lassen, trainieren wir BPB mit der Adresse eines bestimmten Gadgets.
-Dieses Gadget ist ein Codeabschnitt, der in diesem Programm oder geladenen Bibliotheken vorhanden ist und in unserem Fall dem Code aus \hyperref[itm:step3_code]{\underline{Schritt 3}} der Spectre-V1 Attacke ähnelt.
+Dieses Gadget ist ein Codeabschnitt, der in diesem Programm oder geladenen Bibliotheken vorhanden ist und in unserem Fall dem Code aus \hyperref[itm:spectre_step3_code]{\underline{Schritt 3}} der Spectre-V1 Attacke ähnelt.
 Schlussendlich werden vom angreifenden Programm wieder Zeitmessungen durchgeführt, um den Wert zu ermitteln, der soeben in den Cache geladen wurde.
 
-\subsection{Gegenmaßnahmen}\label{subsec:gegenmassnahmen}
+\subsection{Gegenmaßnahmen}
+\label{subsec:spectre_gegenmassnahmen}
 
 Gegenmaßnahmen gegen Spectre-V2 wurden an verschiedenen Stellen implementiert.
 Einerseits wurden auf Softwareseite verschiedene Patches veröffentlicht.

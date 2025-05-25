@@ -1,3 +1,40 @@
 \section{Meltdown}\label{sec:meltdown}
 
-M
+Meltdown wurde zusammen mit Spectre von derselben Forschergruppe am 3.~Januar 2018 veröffentlicht~\cite{kocher2018spectre}.
+Anders als Spectre ist Meltdown ein Angriff, der primär auf Intel-Prozessoren funktioniert, jedoch auch auf der PowerPC-Architektur und manchen ARM-Prozessoren nachgewiesen wurde~\cite{cve_2024_45333}.
+Das Funktionsprinzip von Meltdown ähnelt dem von Spectre, da in beiden Fällen der Cache als Side-Channel genutzt wird, um unzugängliche Daten zu extrahieren.
+Der Unterschied zu Spectre liegt jedoch in der Art und Weise, wie die Befehle ausgeführt werden, die auf diese Daten zugreifen.
+Während Spectre auf spekulative Ausführung setzt, nutzt Meltdown die Out-of-Order-Ausführung aus~\cite{kocher2018meltdown}.
+
+\subsection{Funktionsweise}
+\label{subsec:meltdown_funktionsweise}
+Um Kontextwechsel zwischen Benutzer- und Kernelmodus zu erleichtern, wurde auf Betriebssystemebene der Speicher des Kernels und der Benutzerprozesse im selben Adressraum verfügbar gemacht.
+Um zu verhindern, dass ein Benutzerprozess auf den Speicher des Kernels zugreift, wird beim Wechsel in den Kernelmodus ein spezielles Bit gesetzt, um den Zugriff auf den Kernel-Speicher zu erlauben.
+Dieses Bit kann im Benutzerprozess nicht verändert werden und wird automatisch beim Wechsel in den Usermodus wieder entfernt.
+Dadurch entfällt bei Kontextwechseln die erneute Konfiguration der Memory Management Unit (MMU), da der Kernel-Speicher bereits im Adressraum verfügbar ist.
+Sollte ein Benutzerprozess dennoch versuchen, auf den Kernel-Speicher zuzugreifen, wird dieser Zugriff vom Betriebssystem abgefangen und führt zu einer Segmentation Fault.
+Im Idealfall ist es somit nicht möglich, Daten des Kernels zu laden oder diesen für weitere Verarbeitung zu nutzen. \\
+Durch einen Fehler auf hardwareseitiger Ebene ist es jedoch möglich, dass durch Out-of-Order-Ausführung das Laden von Daten aus dem Kernel-Speicher abgeschlossen wird, bevor der Zugriff auf den Kernel-Speicher überprüft wurde.
+Das Verfahren, um einen Wert aus dem Cache auslesbar zu machen, nutzt die bereits bei Spectre beschriebene Technik: Basierend auf dem geladenen Wert wird ein Teil eines Arrays wird geladen, anschließend werden die Zugriffszeiten auf alle Bereiche des Arrays gemessen, um den geladenen Bereich zu ermitteln.
+Dies lässt daraufhin Rückschlüsse auf den ursprünglich geladenen Wert zu, obwohl dieser Zugriff illegal war und der Prozessor den Zugriff rückgängig gemacht hat.
+In C code könnte dies wie folgt aussehen:\\
+\texttt{array2[*kernel\_addr * 512]}\\
+Der Stern vor \texttt{kernel\_addr} dereferenziert den Pointer in den Kernel und lädt den Wert, der sich an dieser Adresse befindet.
+Dieser wird anschließend mit \texttt{512} multipliziert, um einen bestimmten Bereich des Arrays \texttt{array2} zu laden.
+Im Gegensatz zu Spectre wird dieser Code nicht spekulativ ausgeführt.
+Stattdessen verursacht er eine Segmentation Fault, da die Prüfung des Zugriffs auf den Kernel-Speicher durch die Out-of-Order-Ausführung weiterhin stattfindet, jedoch verzögert.\\
+Um zu verhindern, dass das Programm beim Auslösen der Segmentation Fault abstürzt, sind verschiedene Techniken möglich.
+Einerseits kann eine geworfene Segmentation Fault durch Exception Handling abgefangen werden, sodass der Programmfluss an einer anderen Stelle fortgesetzt werden kann.
+Alternativ kann der Prozess kurz vor dem Zugriff geforkt werden, wodurch der Zugriff auf den Kernel-Speicher in einem separaten Prozess erfolgt welcher daraufhin abstürzt, während der ursprüngliche Prozess die Zeitmessung durchführt.
+Eine weitere Möglichkeit besteht darin, den Zugriff, ähnlich wie bei Spectre, spekulativ auszuführen, um einen Absturz des Programms durch die Segmentation Fault zu vermeiden.
+
+\subsection{Gegenmaßnahmen}
+\label{subsec:meltdown_gegenmassnahmen}
+
+Da Hardwarehersteller sowie Softwareentwickler bereits einige Zeit vor der Veröffentlichung von Meltdown in Kenntnis gesetzt wurden, konnten vor der Veröffentlichung verschiedene Gegenmaßnahmen implementiert werden.
+Die bekannteste Gegenmaßnahme ist die Implementierung von Kernel Page Table Isolation (KPTI, ehemals KAISER), die den Kernel-Speicher in einen separaten Adressraum auslagert.
+Bereits im Jahr 2014 wurde KASLR (Kernel Address Space Layout Randomization) im Linux Kernel implementiert, um Kernel Adressen vor Benutzerprozessen zu verbergen.
+Der Nachfolger KAISER (Kernel Address Isolation to have Side-channels Efficiently Removed) bot zusätzlich die Möglichkeit, den Kernel-Speicher vor Benutzerprozessen zu schützen und den Meltdown-Angriff zu verhindern.
+KPTI ist eine Erweiterung von KAISER, die den Kernel-Speicher in einen separaten Adressraum auslagert und somit vollständig verhindert, dass Benutzerprozesse auf den Kernel-Speicher zugreifen können.
+Die Performance-Einbußen durch KPTI variieren stark je nach Anwendung und liegen zwischen 5\% bei \enquote{normalen} Anwendungen und bis zu 30\% in extremen Fällen~\cite{kaiser_2017}.
+Intel konnte jedoch durch Hardware-Updates die Performance-Einbußen reduzieren, indem Prozessoren mit PCID (Process-Context Identifiers) ausgestattet wurden~\cite{pcworld_2018}.
