@@ -1,15 +1,13 @@
 \section{Grundlagen moderner CPU-Architekturen}
 \label{sec:grundlagen-moderner-cpu-architekturen}
-
-Moderne Prozessoren sind schnell, Taktraten von 5 GHz sind keine Seltenheit, 10 oder mehr Kerne sind Standard~\cite{ryzen_9}.
-Diese Geschwindigkeit nützt allerdings wenig, wenn das Laden von Daten aus dem RAM mehrere 100 Zyklen dauert und die CPU in der Zeit nichts tun kann.
-Um solche Situationen zu vermeiden, verwenden moderne Prozessoren verschiedene Techniken, um die Ausführung von Befehlen zu beschleunigen. \\
-Im Folgenden werden verschiedene Techniken vorgestellt, die für die nachfolgenden Angriffe von Bedeutung sind.
+Moderne Prozessoren übertreffen den Arbeitsspeicher (RAM) in ihrer Geschwindigkeit deutlich.
+Mit Taktraten von 5 GHz und mehr sowie mindestens 10 Kernen~\cite{ryzen_9} können sie zahlreiche Befehle ausführen, selbst während sie auf Daten aus dem RAM warten.
+Um diese Lücke zu schließen, nutzen moderne Prozessoren verschiedene Optimierungstechniken, die die Befehlsausführung beschleunigen. \\
+Im Folgenden werden diese Optimierungen erläutert, da sie eine zentrale Rolle bei den beschriebenen Angriffen spielen.
 
 \subsection{Cache}
 \label{subsec:cache}
-
-Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speichein.
+Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speicher ein.
 Diese Caches sind direkt in der CPU integriert und bieten deutlich schnelleren Zugriff auf Daten aus dem Arbeitsspeicher (RAM).
 Wird ein benötigter Wert nicht im Cache gefunden (Cache Miss), muss er aus dem langsameren RAM nachgeladen werden.
 Die CPU kopiert dabei die entsprechenden Datenblöcke (Cache Lines) aus dem RAM in den Cache, sodass zukünftige Zugriffe schneller erfolgen können.
@@ -17,23 +15,22 @@ Hierbei wird, falls notwendig, ein Cache-Eintrag überschrieben, sodass der alte
 
 \subsection{Out-of-Order Execution}
 \label{subsec:out-of-order-execution}
-
-Moderne Prozessoren sind in der Lage die Reihenfolge, in der Befehle ausgeführt werden, zur Laufzeit des Programms zu ändern.
-Wenn beispielsweise ein Befehl auf einen Wert wartet, der sich im RAM befindet, würde dies normalerweise dazu führen, dass keine nachfolgenden Befehle ausgeführt werden können, bis der Wert verfügbar ist und der Befehl ausgeführt werden kann.
-Solange ein Befehl auf Werte warten muss, wird dieser deshalb auf eine Warteliste gesetzt.
+Moderne Prozessoren können die Reihenfolge der Befehlsausführung während der Programmlaufzeit dynamisch anpassen.
+Wenn ein Befehl auf einen Wert aus dem RAM wartet, würde dies normalerweise dazu führen, dass nachfolgende Befehle blockiert werden, bis der Wert verfügbar ist und der Befehl ausgeführt werden kann.
+Pipelining ist eine Technik, die es ermöglicht, mehrere Befehle parallel zu verarbeiten, indem die Ausführung in verschiedene Phasen wie Laden, Berechnen und Speichern unterteilt wird.
+Wird beim Laden eines Befehls festgestellt, dass benötigte Werte noch nicht verfügbar sind, wird dieser Befehl in eine Warteschlange verschoben, während andere Befehle, deren Werte bereits verfügbar sind oder keine Abhängigkeit zum blockierenden Befehl haben, geladen und ausgeführt werden können.
 Des Weiteren ist es möglich, unabhängige Befehle, wie zum Beispiel eine Multiplikation und eine Division, die verschiedene funktionale Einheiten der CPU nutzen, gleichzeitig auszuführen.
-Dies führt zu einer höheren Auslastung der CPU und einer schnelleren Ausführung des Programms.
+Dies ermöglicht eine höhere Auslastung der CPU und dadurch eine schnellere Programmausführung.
 
 \subsection{Speculative Execution}
 \label{subsec:speculative-execution}
-
-Die effektivste Methode zur Beschleunigung der Ausführung von Programmen ist jedoch Werte bereits im Voraus zu berechnen oder Werte im Voraus zu laden.
+Die effektivste Methode zur Beschleunigung der Ausführung von Programmen ist jedoch Werte bereits im Voraus zu berechnen.
 Ein Beispiel: In einer Schleife kann die CPU bereits vorab Befehle ausführen, noch bevor feststeht, ob die Schleife tatsächlich durchlaufen wird.
 Sobald erkannt wurde, dass die Schleife tatsächlich ausgeführt werden soll, liegen die Ergebnisse dieser Befehle bereits vor und das Programm kann ohne Verzögerung an einer nachfolgenden Stelle fortgesetzt werden.
-Werden die berechneten Ergebnisse nicht benötigt, werden sie verworfen und die CPU muss den ursprünglichen Programmablauf fortsetzen.
-Dies soll (im Idealfall) keine Auswirkungen auf die Ausführung des Programms haben, da die CPU den ursprünglichen Programmablauf fortsetzen kann. \\
+Werden die berechneten Ergebnisse nicht benötigt, verwirft die CPU diese und setzt die Programmausführung fort.
+Idealerweise hat dies keine Auswirkungen auf den ursprünglichen Programmablauf, da die CPU die berechneten Werte vollständig verwirft.
 Um die bestmöglichen Vorhersagen über den Programmablauf zu treffen, verwendet die CPU verschiedene Techniken, wie zum Beispiel Branch Prediction.
-Branch Prediction ist eine Technik, mit der die CPU versucht, den Ausgang von Branches(=Verzweigungen) vorherzusagen.
-Ein Beispiel für eine Branch ist z.~B.~eine if-Anweisung oder eine Schleife.
+Branch Prediction ist eine Technik, mit der die CPU versucht, den Ausgang von Branches (Verzweigungen) vorherzusagen.
+Beispiele für Branches sind if-Anweisungen oder Schleifen.
 Hier muss zur Laufzeit entschieden werden, ob der Code innerhalb der if-Anweisung oder der Schleife ausgeführt werden soll oder nicht.
-Die BPU (Branch Prediction Unit) der CPU analysiert den Programmablauf und versucht, bereits im Voraus zu bestimmen, welchen Weg eine Verzweigung am vermutlich nehmen wird, um den wahrscheinlichsten Ausführungsweg ausführen zu lassen.
+Die BPU (Branch Prediction Unit) der CPU analysiert den Programmablauf und versucht, bereits im Voraus zu bestimmen, welchen Weg eine Verzweigung vermutlich nehmen wird, um den wahrscheinlichsten Ausführungsweg vorhersagen zu können.

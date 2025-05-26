@@ -1,10 +1,9 @@
 \section[Einleitung]{Einleitung}
 \label{sec:einleitung}
-
-Moderne Prozessoren sind hochkomplexe Systeme, deren Aufgaben weit über nur simple Befehlsausführung hinausgehen.
-Um Geschwindigkeit zu maximieren, verwenden sie verschiedene Techniken wie caching, Speculative Ausführung, Out-of-Order Execution und viele weitere Optimierungen.
+Moderne Prozessoren sind hochkomplexe Systeme, deren Aufgaben weit über simple Befehlsausführung hinausgehen.
+Um Geschwindigkeit zu maximieren, verwenden sie verschiedene Techniken wie Caching, Speculative Ausführung, Out-of-Order Execution und viele weitere Optimierungen.
 Da diese Optimierungen jedoch unter Umständen den normalen Programmablauf verändern oder sogar Anweisungen ausführen, die normalerweise nicht ausgeführt worden wären, können sie bei fehlerhafter Implementierung oder unsachgemäßer Handhabung zu Sicherheitslücken führen.\\
 Diese Sicherheitslücken sind besonders gefährlich, da sie oft nicht ausreichend oder nur mit Leistungseinbußen auf Softwareebene behoben werden können, sondern auch Hardwareänderungen erfordern können.
-Spectre und Meltdown sind zwei der bekanntesten Prozessorlücken und auch heute noch relevant, wie man in \textbf{CVE-2024-45332}~\cite{cve_2024_45332,bprc_sec25} oder \textbf{Training Solo}~\cite{training_solo} sehen kann.
+Spectre und Meltdown sind zwei der bekanntesten Prozessorlücken und auch heute noch relevant, wie  \textbf{CVE-2024-45332}~\cite{cve_2024_45332,bprc_sec25} oder \textbf{Training Solo}~\cite{training_solo} zeigen.
 Darüber hinaus ermöglichen diese Lücken beispielsweise das Umgehen der Trennung zwischen Kernel- und User-Space oder zwischen verschiedenen virtuellen Maschinen.
 Dies ist besonders gefährlich in Cloud-Umgebungen, da häufig auf einer Hardware mehrere virtuelle Maschinen laufen, die von verschiedenen Benutzern betrieben werden.
