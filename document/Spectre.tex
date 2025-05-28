@@ -1,12 +1,12 @@
 \section{Spectre}
 \label{sec:spectre}
 Spectre wurde von verschiedenen Forschenden entdeckt und am 3.~Januar~2018 veröffentlicht~\cite{kocher2018spectre}.
-Hardwarehersteller wie Intel und AMD als auch Softwarehersteller wie Microsoft wurden bereits am 1.~Juni 2017 informiert, um die Lücke im Voraus durch Softwareupdates zu schließen. \\
+Hardwarehersteller wie Intel und AMD sowie Softwarehersteller wie Microsoft wurden bereits am 1.~Juni~2017 informiert, um die Sicherheitslücke im Voraus durch Softwareupdates zu schließen. \\
 Spectre ist ein Angriff, der Daten über einen Cache-Side-Channel ausliest.
-Bei Side-Channels handelt es sich um indirekte Informationen, die über ein System gewonnen werden können, wie beispielsweise der Stromverbrauch der CPU, Elektromagnetische Strahlung, Zeitmessungen oder sogar Geräusche.
-Spectre analysiert die Zugriffszeiten auf Daten, um zu bestimmen, ob diese aus dem Arbeitsspeicher geladen werden mussten, was mehrere 100 Zyklen dauert, oder durch vorherige Zugriffe bereits in den Cache geladen wurden, was weniger als 10 Zyklen dauert.
+Side-Channels sind indirekte Informationen, die über ein System gewonnen werden können, wie beispielsweise der Stromverbrauch der CPU, elektromagnetische Strahlung, Zeitmessungen oder sogar Geräusche.
+Spectre analysiert die Zugriffszeiten auf Daten, um zu bestimmen, ob diese aus dem Arbeitsspeicher geladen werden mussten, was mehrere Hundert Zyklen dauert, oder ob sie durch vorherige Zugriffe bereits im Cache vorhanden sind, was weniger als zehn Zyklen benötigt.
 Um diese Daten in den Cache zu laden, nutzt Spectre die spekulative Ausführung von Befehlen, um Daten zu laden, die eigentlich nicht geladen werden dürften.
-Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprüfung, ob der Zugriff auf diese Daten überhaupt legitim ist, erst zur \enquote{tatsächlichen} und nicht spekulativen Ausführung erfolgt.
+Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprüfung, ob der Zugriff auf diese Daten überhaupt legitim ist, erst bei der \enquote{tatsächlichen} und nicht spekulativen Ausführung erfolgt.
 
 \subsection{Vorgehensweise}
 \label{subsec:spectre_vorgehensweise}
@@ -23,7 +23,6 @@ Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprü
 		      \phantomsection\label{itm:spectre_step3_code}
 		      \texttt{array2[array1[x] * 512]} \\
 		      Dieser Aufruf nutzt den Wert, der sich in array1 an der Stelle x befindet (multipliziert mit 512), um auf einen Wert in array2 zuzugreifen.
-		      Der Wert, welcher sich tatsächlich in array2 befindet, ist hier irrelevant.
 		      Ein solcher Aufruf mit dem Wert \texttt{x=2} hätte zur Folge, dass der Wert an der Stelle \texttt{array2[array[2] * 512]} in den Cache geladen wird.
 		      Befindet sich an der Stelle \texttt{array1[2]} der Wert \texttt{42}, wird so der Teil des \texttt{arrays2} and der Stelle \texttt{array2[42 * 512]} in den Cache geladen.
 	\end{itemize}
@@ -31,73 +30,70 @@ Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprü
 \hfill
 \begin{minipage}{0.4\textwidth}
 	\centering
-	\includegraphics[width=\linewidth]{Attack-2}
+	\includegraphics[width=\linewidth]{Attack}
 \end{minipage}
 
 \begin{itemize}
-	\item[\textbf{4.}]\phantomsection\label{itm:spectre_step4} Die oben genannte Zeile wird mehrmals in einer Schleife ausgeführt, um den Branch Predictor zu trainieren.
-	      Hierbei werden \texttt{x} Werte verwendet, die innerhalb des \texttt{arrays1} liegen.
-	      Dies lässt die CPU vermuten, dass zukünftige Durchläufe der Schleife ebenfalls diesen Aufruf ausführen werden, was zur Folge hat, dass für zukünftige \texttt{x} Werte der Aufruf bereits im Voraus spekulativ ausgeführt wird.
-	\item[\textbf{5.}] Der Wert \texttt{x} wird auf einen Wert gesetzt, der sich nicht im \texttt{array1} befindet.
-	      Dieser Wert entspricht dem Abstand zwischen dem \texttt{array1} und einem Bereich im Arbeitsspeicher, der versucht wird mit diesem Exploit auszulesen.
-	      Die CPU führt durch das vorherige Training den spekulativen Zugriff auf \texttt{array1} aus, obwohl der Wert \texttt{x} nicht im \texttt{array1} vorhanden ist.
-	      Beispielsweise könnte \texttt{x=31000} gesetzt werden, was zur Folge hat, dass der Wert, der sich in \texttt{array1} an der Stelle \texttt{31000} befinden würde, geladen wird (In C entspricht der Zugriff mit \texttt{array[x]} der Startadresse von \texttt{array} + \texttt{x} * Größe des Datentyps).
-	      Da \texttt{array1} jedoch nur 16 Elemente lang ist, befinden sich an dieser Stelle andere Werte (die wir spekulativ auslesen wollen).
-	      Der Wert, welcher sich an dieser Stelle befindet und sich im Bereich von 0 bis 255 befindet, wird nun mit dem Wert \texttt{512} multipliziert und verwendet, um auf ein Element in \texttt{array2} zuzugreifen.
-	      Dieser Zugriff hat keinen direkten Nutzen, da sich in \texttt{array2} keine relevanten Werte befinden.
-	      Er bewirkt jedoch, dass der entsprechende Wert sowie die nachfolgenden Elemente von \texttt{array2} in den Cache geladen werden.
-	      Die Abstände von 512 Bytes sind so gewählt, um sicherzustellen, dass erkennbar bleibt, welcher Wert in den Cache geladen wurde.
-	      Der Abstand von 512 Bytes bedeutet, dass der Wert \texttt{0} im \texttt{array2} an der Stelle \texttt{0}, der Wert \texttt{1} an der Stelle \texttt{512}, der Wert \texttt{2} an der Stelle \texttt{1024} usw.~liegt.
-	      Dieser Abstand wurde bewusst gewählt, um zu verhindern, dass mehrere Werte gleichzeitig in den Cache geladen werden, falls beispielsweise der Wert \texttt{0} den Index \texttt{0} und der Wert \texttt{1} den Index \texttt{1} hätte.
-	      Durch die großen Abstände bleibt eindeutig, welcher Wert tatsächlich in den Cache geladen wurde.
-	\item[\textbf{6.}] Durch eine spezielle Abbruchbedingung, welche prüft, ob \texttt{x} innerhalb des \texttt{arrays1} liegt, wird verhindert, dass der Zugriff auf \texttt{array1[x]} tatsächlich ausgeführt wird, um einen Segmentation Fault zu verhindern.
-	      Die spekulative Ausführung hat diese Abbruchbedingung auch für \texttt{x} Werte außerhalb des \texttt{array1} ignoriert, da sie in vergangenen Durchläufen bereits zu keinem Abbruch geführt hat.
-	      Dies sorgt dafür, dass die spekulative Ausführung des Zugriffs auf \texttt{array1} verworfen wird und es somit auch nicht mehr möglich ist, den Wert, der sich an dieser Stelle befunden hat, im weiteren Verlauf des Programms zu verwenden.
+	\item[\textbf{4.}]\phantomsection\label{itm:spectre_step4} Die oben gezeigte Zeile wird mehrfach in einer Schleife ausgeführt, um den Branch Predictor zu trainieren.
+	      Dabei werden \texttt{x}-Werte verwendet, die innerhalb des \texttt{array1} liegen.
+	      Dies führt dazu, dass die CPU annimmt, zukünftige Durchläufe der Schleife würden denselben Aufruf ausführen,
+	      was zur Folge hat, dass dieser für zukünftige \texttt{x} Werte bereits im Voraus spekulativ ausgeführt wird.
+	\item[\textbf{5.}] Der Wert \texttt{x} wird nun auf einen Index gesetzt, der außerhalb des \texttt{array1} liegt.
+	      Dieser Index entspricht dem Abstand zwischen \texttt{array1} und einem Speicherbereich, der durch den Exploit ausgelesen werden soll.
+	      Durch das vorherige Training führt die CPU einen spekulativen Zugriff auf \texttt{array1} aus, obwohl der Wert \texttt{x} außerhalb des \texttt{array1} liegt.
+	      Beispielsweise könnte \texttt{x=31000} gesetzt werden, was dazu führt, dass die CPU spekulativ auf die Adresse \texttt{array1 + 31000} zugreift.
+	      Da \texttt{array1} jedoch nur 16 Elemente enthält, liegt diese Adresse außerhalb des gültigen Adressbereichs und verweist stattdessen auf einen anderen Speicherbereich.
+	      Der Wert des Bytes an dieser Adresse wird mit 512 multipliziert und verwendet, um auf ein Element in \texttt{array2} zuzugreifen.
+	      Dieser Zugriff hat keinen direkten Nutzen, da \texttt{array2} keine relevanten Daten enthält.
+	      Er bewirkt jedoch, dass der entsprechende Wert sowie einige nachfolgende Elemente von \texttt{array2} in den Cache geladen werden.
+	      Die Abstände von 512 Bytes zwischen den Elementen in \texttt{array2} sorgen dafür, dass nur ein einzelner Wert in den Cache geladen wird.
+	\item[\textbf{6.}] Eine spezielle Abbruchbedingung prüft, ob \texttt{x} innerhalb des \texttt{array1} liegt, und verhindert so, dass der Zugriff auf \texttt{array1[x]} tatsächlich ausgeführt wird, um einen Segmentation Fault zu vermeiden.
+	      Die spekulative Ausführung ignoriert diese Abbruchbedingung, da sie in vorherigen Durchläufen bereits zu keinem Abbruch geführt hat.
+	      Dadurch wird die spekulative Ausführung des Zugriffs auf \texttt{array1} verworfen, sodass der Wert an dieser Stelle im weiteren Verlauf des Programms nicht mehr verwendet werden kann.
 	\item[\textbf{7.}] Nun werden alle 255 möglichen Werte, die sich an der Stelle \texttt{array1[x]} befinden könnten, nacheinander getestet.
-	      Hierfür wird in einer Schleife gemessen wie lange ein Zugriff auf das Element \texttt{array2[i * 512]} dauert.
+	      Hierfür wird in einer Schleife gemessen, wie lange ein Zugriff auf das Element \texttt{array2[i * 512]} dauert.
 	      Falls sich an der Stelle \texttt{array1[x]} z.B.~der Wert \texttt{4} befunden hat, würde dies bedeuten, dass die spekulative Ausführung das Element \texttt{array2[4 * 512]} in den Cache geladen hat.
-	      Wird nun gemessen, dass der Zugriff auf \texttt{array2[4 * 512]} deutlich schneller ist als der Zugriff auf andere Elemente wie \texttt{array2[0 * 512]} oder \texttt{array2[5 * 512]} so kann davon ausgegangen werden, dass sich an der Stelle \texttt{array1[x]} der Wert \texttt{4} befunden hat.
-	\item[\textbf{8.}] Der soeben ermittelte Wert wird gespeichert und der \texttt{x} Wert um 255 Bits erhöht.
-	      Dadurch wird der nächste Durchlauf die nächsten 8 Bytes des Zielbereiches auslesen.
+	      Wird nun gemessen, dass der Zugriff auf \texttt{array2[4 * 512]} deutlich schneller ist als der Zugriff auf andere Elemente wie \texttt{array2[0 * 512]} oder \texttt{array2[5 * 512]}, so kann davon ausgegangen werden, dass sich an der Stelle \texttt{array1[x]} der Wert \texttt{4} befunden hat.
+	\item[\textbf{8.}] Der soeben ermittelte Wert wird gespeichert, und der \texttt{x}-Wert um 255 Bytes erhöht.
+	      Dadurch wird im nächsten Durchlauf die nächsten 8 Bytes des Zielbereichs ausgelesen.
 	      Falls die gewünschte Menge an Bytes noch nicht ausgelesen wurde, wird zu \hyperref[itm:spectre_step4]{\underline{Schritt 4}} zurückgekehrt.
 \end{itemize}
 
 \subsection{Spectre-V2}
 \label{subsec:spectre_spectre-v2}
 Die oben beschriebene Variante von Spectre ist nur eine von vielen verschiedenen Varianten und Weiterentwicklungen.
-Die bekannteste Weiterentwicklung ist Spectre-V2~\cite{spec_v2}, die sich gegen den Branch Predictor richtet.
-Seit der ersten Version von Spectre-V2 im Jahr 2018 (SpectreBTB) entstehen kontinuierlich neue Varianten und Abwandlungen, wie z.B. Retbleed~\cite{spec_v2_retbleed} aus dem Jahr 2022 oder Training~Solo~\cite{training_solo} aus dem Jahr 2025. \\
-Wie auch bei Spectre-V1 wird spekulativ Code ausgeführt, welcher daraufhin Daten in den Cache lädt die über Timing-Angriffe ausgelesen werden können.
-Anstatt aber rein auf speculative Ausführung im eigenen Programm zu setzen, wird bei SpectreBTB ausgenutzt, dass der Branch Prediction Buffer (BPB) zwischen Prozessen geteilt wird.
-Dieser Buffer beinhaltet Daten, die für die Vorhersage von Branches verwendet und während der Ausführung von Programmen gesammelt werden.
-Wenn die CPU im Programmablauf auf eine Branch trifft, bei der noch nicht klar ist, wohin diese springen wird, wird der BTB verwendet, um den wahrscheinlichsten Sprung zu bestimmen und die spekulative Ausführung zu ermöglichen. \\
-Um einen Angriff auszuführen, trainieren wird in unserem Programm den BPB so, dass er in der Zukunft Branches vorhersagt, die von uns für Vorteil sind.
-Wenn die CPU nun ein anderes Programm ausführt, in dem sich eine Branch befindet, deren Sprungziel unbekannt ist, wird der BTB verwendet, um den wahrscheinlichsten Sprung zu bestimmen.
-Durch unser Training wird der Branch Predictor jetzt einen Sprung vorhersagen, der im Programm so tatsächlich nie ausgeführt worden wäre.
-Dies ermöglicht es uns, wenn auch nur spekulativ, den Verlauf eines anderen Programmes zu ändern. \\
+Die bekannteste Weiterentwicklung ist Spectre-V2~\cite{spec_v2}, die gezielt den Branch Predictor angreift.
+Seit der ersten Version von Spectre-V2 im Jahr 2018 (SpectreBTB) wurden kontinuierlich neue Varianten und Abwandlungen entwickelt, wie z.B.~Retbleed~\cite{spec_v2_retbleed} aus dem Jahr 2022 oder Training~Solo~\cite{training_solo} aus dem Jahr 2025. \\
+Wie bei Spectre-V1 wird spekulativ Code ausgeführt, der Daten in den Cache lädt, die anschließend über Timing-Angriffe ausgelesen werden können.
+Anstatt jedoch auf die spekulative Ausführung im eigenen Programm zu setzen, nutzt SpectreBTB aus, dass der Branch Prediction Buffer (BPB) zwischen Prozessen geteilt wird.
+Dieser Buffer beinhaltet Daten, die für die Vorhersage von Branches verwendet und während der Programmausführung gesammelt werden.
+Wenn die CPU im Programmablauf auf eine Branch trifft, deren Sprungziel noch unklar ist, wird der BPB verwendet, um den wahrscheinlichsten Sprung zu bestimmen und die spekulative Ausführung zu ermöglichen. \\
+Um einen Angriff auszuführen, wird der BPB in unserem Programm so trainiert, dass er zukünftig Branches vorhersagt, die für uns vorteilhaft sind.
+Wenn die CPU anschließend ein anderes Programm ausführt, in dem sich eine Branch mit unbekanntem Sprungziel befindet, wird der BPB verwendet, um den wahrscheinlichsten Sprung zu bestimmen.
+Durch unser Training sagt der Branch Predictor nun einen Sprung voraus, der im Zielprogramm tatsächlich nie ausgeführt worden wäre.
+Dies ermöglicht es uns, wenn auch nur spekulativ, den Ablauf eines anderen Programms zu beeinflussen. \\
 Um Daten in den Cache zu laden, muss zunächst das Zielprogramm analysiert werden, um ein sogenanntes Gadget zu identifizieren.
 Ein Gadget ist ein spezifischer Codeabschnitt, der für den Angriff genutzt werden kann, da er eine bestimmte Funktionalität bereitstellt, die für die spekulative Ausführung ausgenutzt werden kann.
-Dieser Codeabschnitt hat eine spezifische Adresse, die durch Analyse des Programms gefunden werden muss.
+Dieser Codeabschnitt hat eine spezifische Adresse, die durch Analyse des Programms ermittelt werden muss.
 In unserem Fall handelt es sich um einen Codeabschnitt, der dem Zugriff \texttt{array2[array1[x] * 512]} aus \hyperref[itm:spectre_step3_code]{\underline{Schritt 3}} der Spectre-V1-Attacke ähnelt.
 Nach der Identifikation dieses Gadgets wird dessen Adresse verwendet, um den Branch Prediction Buffer (BPB) zu trainieren. \\
-Nun führt das Zielprogramm spekulativ das Gadget aus, um Daten in den Cache zu laden, die anschließend durch Zeitmessungen bestimmt werden können.
+Das Zielprogramm führt anschließend spekulativ das Gadget aus, wodurch Daten in den Cache geladen werden, die durch Zeitmessungen ausgelesen werden können.
 
 \subsection{Gegenmaßnahmen}
 \label{subsec:spectre_gegenmassnahmen}
-Gegenmaßnahmen gegen Spectre-V2 wurden auf verschiedenen Ebenen implementiert, wobei unter anderem zahlreiche Software-Patches veröffentlicht wurden.
-So wurden im Linux Kernel verschiedene Maßnahmen implementiert, um zu verhindern, dass verschiedene sensitive Funktionen spekulativ ausgeführt werden können~\cite{linux_nospec}.
-Dies verhindert, dass der Branch Predictor durch Manipulation innerhalb des Kernels durch spekulative Ausführung Daten leaken kann.
-So kann die Funktion \texttt{array\_index\_nospec} genutzt werden, um trotz spekulativer Ausführung Zugriffe auf die Bereiche von arrays zu begrenzen.
-Diese muss allerdings manuell in den Code eingefügt werden und ist nicht automatisiert implementiert.
-Des Weiteren wurden auch verschiedene Maßnahmen in den Browsern implementiert, um zu verhindern, dass Spectre-V2 Angriffe über JavaScript ausgeführt werden können.
-So wurde in Firefox und Webkit die Genauigkeit von Zeitmessungen reduziert, um zu verhindern, dass Angreifer den Cache-Zugriff über Timing-Angriffe auslesen können (\texttt{performance.now()} wurde auf Genauigkeit von 20µs reduziert~\cite{luke_wagner_2018}).
-Chrome hingegen hat die Sandbox-Funktionalität erweitert und ermöglicht es Websites in separaten Prozessen laufen zu lassen
-~\cite{heise_2018_spec}.\\
-Des Weiteren wurden von verschiedenen Hardwareherstellern wie Intel und AMD Updates für den Microcode veröffentlicht, um Sicherheitslücken wie Spectre und Meltdown zu schließen. \\
-Microcode ist eine spezielle, niedrigstufige Software, die direkt auf der CPU ausgeführt wird und die Assembly-Befehle sowie komplexe Instruktionen in einfache Hardware-Steuersignale übersetzt.
-Sie ermöglicht es, bestimmte Funktionen der Hardware zu ändern oder zu erweitern, ohne physische Änderungen an der Hardware vorzunehmen. \\
-Im Fall von Intel wurde IBRS (Indirection Branch Restricted Speculation~\cite{intel_1}), IBPB (Indirect Branch Predictor Barrier~\cite{intel_2}) und STIBP (Single Thread Indirect Branch Predictors~\cite{intel_3}) implementiert.
-Diese Maßnahmen verhindern, dass der Branch Predictor zwischen logischen Prozessoren der CPU, oder Prozessen unterschiedlicher Privilegien geteilt wird.
-Dass diese Gegenmaßnahmen nicht immer ausreichen, zeigt Training Solo~\cite{training_solo}, welches diese Schutzmaßnahmen umgeht, indem das Trainieren des BTB nicht im einen Programm erfolgt, sondern direkt im Kernel.
+Gegenmaßnahmen gegen Spectre-V2 wurden auf verschiedenen Ebenen implementiert, wobei zahlreiche Software-Patches veröffentlicht wurden.
+Im Linux-Kernel wurden verschiedene Maßnahmen eingeführt, um zu verhindern, dass sensitive Funktionen spekulativ ausgeführt werden~\cite{linux_nospec}.
+Dies verhindert, dass der Branch Predictor durch Manipulation innerhalb des Kernels Daten über spekulative Ausführung leaken kann.
+Die Funktion \texttt{array\_index\_nospec} kann verwendet werden, um trotz spekulativer Ausführung Zugriffe auf die Bereiche von Arrays zu begrenzen.
+Diese Funktion muss jedoch manuell in den Code eingefügt werden und ist nicht automatisiert implementiert.
+Darüber hinaus wurden verschiedene Maßnahmen in Browsern implementiert, um Spectre-V2-Angriffe über JavaScript zu verhindern.
+In Firefox und Webkit wurde die Genauigkeit von Zeitmessungen reduziert, um zu verhindern, dass Angreifer den Cache-Zugriff über Timing-Angriffe auslesen können (\texttt{performance.now()} wurde auf eine Genauigkeit von 20µs reduziert~\cite{luke_wagner_2018}).
+Chrome hat die Sandbox-Funktionalität erweitert, sodass Websites in separaten Prozessen ausgeführt werden können~\cite{heise_2018_spec}.
+Des Weiteren haben Hardwarehersteller wie Intel und AMD Microcode-Updates veröffentlicht, um Sicherheitslücken wie Spectre und Meltdown zu schließen. \\
+Microcode ist eine spezielle, niedrigstufige Software, die direkt auf der CPU ausgeführt wird und Assembly-Befehle sowie komplexe Instruktionen in einfache Hardware-Steuersignale übersetzt.
+Er ermöglicht es, bestimmte Funktionen der Hardware zu ändern oder zu erweitern, ohne physische Änderungen an der Hardware vorzunehmen. \\
+Im Fall von Intel wurden Maßnahmen wie IBRS (Indirection Branch Restricted Speculation~\cite{intel_1}), IBPB (Indirect Branch Predictor Barrier~\cite{intel_2}) und STIBP (Single Thread Indirect Branch Predictors~\cite{intel_3}) implementiert.
+Diese Mechanismen verhindern, dass der Branch Predictor zwischen logischen Prozessoren der CPU oder Prozessen unterschiedlicher Privilegien geteilt wird.
+Dass diese Gegenmaßnahmen nicht immer ausreichen, zeigt Training Solo~\cite{training_solo}, eine Technik, die diese Schutzmaßnahmen umgeht, indem das Trainieren des BTB direkt im Kernel erfolgt.
 Somit sind Schutzmaßnahmen wie \textit{IBRS} nicht mehr wirksam, da das Training des BTB von einem privilegierten Prozess ausgeführt wird.
-Intel hat hierfür bereits über Microcode-Updates reagiert und die Instruktion \textit{IBHF}~\cite{darkcrizt_2025} hinzugefügt.
+Intel hat bereits reagiert und über Microcode-Updates die Instruktion \textit{IBHF}~\cite{darkcrizt_2025} hinzugefügt.
