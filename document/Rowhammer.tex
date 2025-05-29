@@ -1,20 +1,20 @@
 \section{Rowhammer}
 \label{sec:rowhammer}
 Rowhammer ist ein Angriff, der weder auf die Prozessorarchitektur noch auf Software-Schwachstellen abzielt, sondern die physikalischen Eigenschaften von DRAM-Speicher ausnutzt~\cite{mutlu2019rowhammer}.
-Der Angriff wurde 2014 erstmals in DDR3-Speicher entdeckt~\cite{kim2014flipping} und betrifft mittlerweile alle modernen DRAM-Typen, einschließlich DDR4 und DDR5.
+Er wurde erstmals 2014 in DDR3-Speicher entdeckt~\cite{kim2014flipping} und betrifft mittlerweile alle modernen DRAM-Typen, einschließlich DDR4 und DDR5.
 
 \subsection{Funktionsweise}
 \label{subsec:rowhammer_funktionsweise}
-Dynamic Random Access Memory (DRAM) ist ein flüchtiger Speicher, der Daten in einer Matrix aus Speicherzellen speichert.
+Dynamic Random Access Memory (DRAM) ist ein flüchtiger Speicher, der Daten in einer Matrix aus Speicherzellen organisiert.
 Jede Speicherzelle besteht aus einem Kondensator und einem Transistor, die zusammen eine einzelne Informationseinheit, ein Bit, speichern.
-Die Zellen sind in Zeilen und Spalten organisiert, wobei der Zugriff über Zeilen- und Spaltenadressen erfolgt.
-Um auf eine bestimmte Speicherzelle zuzugreifen, wird zunächst die entsprechende Zeile aktiviert, bevor die gewünschte Spalte adressiert wird. \\
-Rowhammer nutzt die physikalischen Eigenschaften von DRAM-Speicher aus, indem er durch wiederholte und schnelle Aktivierung bestimmter Speicherzeilen (\enquote{hämmern}) Spannungsfluktuationen erzeugt.
-Diese Fluktuationen entstehen durch die elektromagnetischen Interferenzen, die bei der hohen Dichte moderner DRAM-Zellen unvermeidlich sind.
-Die resultierenden Spannungsfluktuationen können dazu führen, dass benachbarte Speicherzellen, ihre elektrische Ladung verlieren.
-Dies führt zu ungewollten Bit-Flips, bei denen gespeicherte Daten in den Opferzeilen verändert werden~\cite{mutlu2019rowhammer}. \\
+Die Zellen sind in Zeilen und Spalten angeordnet, wobei der Zugriff über Zeilen- und Spaltenadressen erfolgt.
+Um auf eine bestimmte Speicherzelle zuzugreifen, wird zunächst die entsprechende Zeile aktiviert und anschließend die gewünschte Spalte adressiert. \\
+Rowhammer nutzt die physikalischen Eigenschaften von DRAM-Speicher aus, indem durch wiederholte und schnelle Aktivierung bestimmter Speicherzeilen (\enquote{hämmern}) Spannungsfluktuationen erzeugt werden.
+Diese Fluktuationen entstehen durch elektromagnetische Interferenzen, die bei der hohen Dichte moderner DRAM-Zellen unvermeidlich sind.
+Die resultierenden Spannungsfluktuationen können dazu führen, dass benachbarte Speicherzellen ihre elektrische Ladung verlieren.
+Dies führt zu ungewollten Bit-Flips, bei denen gespeicherte Daten in den betroffenen Speicherzellen verändert werden~\cite{mutlu2019rowhammer}. \\
 Rowhammer.js zeigt, dass dieser Angriff sogar über JavaScript in Webbrowsern durchgeführt werden kann.
-Über die Jahre wurden verschiedene Varianten des Angriffs entwickelt, die sich in der Anzahl der betroffenen Zeilen und der Art der \enquote{Hämmerung} unterscheiden:
+Über die Jahre wurden verschiedene Varianten des Angriffs entwickelt, die sich in der Anzahl der betroffenen Zeilen und der Art der Speicherzugriffe unterscheiden:
 \begin{itemize}
 	\itemsep0em
 	\item \textbf{Single-Sided Rowhammer:} Angreifen einer einzelnen Reihe, um benachbarte Zeilen zu beeinflussen.
@@ -26,13 +26,13 @@ Rowhammer.js zeigt, dass dieser Angriff sogar über JavaScript in Webbrowsern du
 \label{subsec:rowhammer_gegenmanahmen}
 Um Rowhammer-Angriffe zu verhindern, haben Hersteller verschiedene Schutzmaßnahmen entwickelt.
 Eine der effektivsten ist der Einsatz von Error-Correcting Code (ECC), der Bit-Fehler erkennen und korrigieren kann.
-ECC-Speicher verwendet spezielle Hardware, die zusätzliche Prüf- und Korrekturbits speichert, um Fehler in den Daten zu erkennen und automatisch zu beheben.
+ECC-Speicher verwendet spezielle Hardware, die zusätzliche Korrekturbits speichert, um Fehler in den Daten zu erkennen und automatisch zu beheben.
 Hierfür wird ein weiteres Modul im RAM integriert, das die Daten bei jedem Schreib- und Lesevorgang überprüft.
 Obwohl dies die tatsächliche Größe des RAMs erhöht, bleibt die nutzbare Kapazität unverändert.
-Diese Technik wird vor allem in Server-Systemen und kritischen Anwendungen eingesetzt, wo Datenintegrität und Zuverlässigkeit erforderlich sind. \\
-Eine weitere Schutzmaßnahme ist Target Row Refresh (TRR), das gefährdete Speicherzeilen automatisch auffrischt, um Bit-Flips zu verhindern.
+Diese Technik wird vor allem in Server-Systemen und kritischen Anwendungen eingesetzt, in denen Datenintegrität und Zuverlässigkeit erforderlich sind. \\
+Eine weitere Schutzmaßnahme ist Target Row Refresh (TRR), das gefährdete Speicherzeilen automatisch auffrischt, um Bit Flips zu verhindern.
 TRR wird von vielen Herstellern implementiert, obwohl es kein offizieller Teil des DDR4-Standards ist.
 Es überwacht Speicherzugriffsmuster, identifiziert häufig aktivierte Zeilen und frischt benachbarte Zeilen auf.
 Dabei werden Aktivierungen gezählt und mit herstellerspezifischen Grenzwerten verglichen.
-Wird ein Grenzwert überschritten, markiert TRR die betroffenen Zeilen als Opferzeilen und frischt sie auf, um Bit-Flips zu vermeiden.
-TRR bietet einen wirksamen Schutz gegen Rowhammer-Angriffe, ist jedoch nicht vollständig zuverlässig, da bestimmte Angriffsmethoden wie Half-Double oder optimierte Zugriffsmuster die Schutzmechanismen umgehen können.
+Wird ein Grenzwert überschritten, markiert TRR die betroffenen Zeilen und frischt sie auf, um Bit-Flips zu vermeiden.
+TRR bietet einen wirksamen Schutz gegen Rowhammer-Angriffe, ist jedoch nicht vollständig zuverlässig, da bestimmte Angriffsmethoden wie Half-Double oder speziell optimierte Zugriffsmuster die Schutzmechanismen umgehen können~\cite{jiang2021trrscope}.

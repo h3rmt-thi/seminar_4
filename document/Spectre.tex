@@ -22,8 +22,8 @@ Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprü
 		\item[\textbf{3.}] Spectre nutzt folgenden Code, um den Cache zu trainieren: \\
 		      \phantomsection\label{itm:spectre_step3_code}
 		      \texttt{array2[array1[x] * 512]} \\
-		      Dieser Aufruf nutzt den Wert, der sich in array1 an der Stelle x befindet (multipliziert mit 512), um auf einen Wert in array2 zuzugreifen.
-		      Ein solcher Aufruf mit dem Wert \texttt{x=2} hätte zur Folge, dass der Wert an der Stelle \texttt{array2[array[2] * 512]} in den Cache geladen wird.
+		      Der Zugriff verwendet den Wert, der sich an der Position \texttt{x} in \texttt{array1} befindet, multipliziert diesen mit 512 und greift anschließend auf das entsprechende Element in \texttt{array2} zu.
+		      Ein solcher Aufruf mit dem Wert \texttt{x=2} hätte zur Folge, dass auf den Wert an der Stelle \texttt{array2[array[2] * 512]} zugegriffen wird.
 		      Befindet sich an der Stelle \texttt{array1[2]} der Wert \texttt{42}, wird so der Teil des \texttt{arrays2} and der Stelle \texttt{array2[42 * 512]} in den Cache geladen.
 	\end{itemize}
 \end{minipage}
@@ -48,15 +48,15 @@ Die spekulative Ausführung ermöglicht das Laden dieser Daten, da die Überprü
 	      Er bewirkt jedoch, dass der entsprechende Wert sowie einige nachfolgende Elemente von \texttt{array2} in den Cache geladen werden.
 	      Die Abstände von 512 Bytes zwischen den Elementen in \texttt{array2} sorgen dafür, dass nur ein einzelner Wert in den Cache geladen wird.
 	\item[\textbf{6.}] Eine spezielle Abbruchbedingung prüft, ob \texttt{x} innerhalb des \texttt{array1} liegt, und verhindert so, dass der Zugriff auf \texttt{array1[x]} tatsächlich ausgeführt wird, um einen Segmentation Fault zu vermeiden.
-	      Die spekulative Ausführung ignoriert diese Abbruchbedingung, da sie in vorherigen Durchläufen bereits zu keinem Abbruch geführt hat.
 	      Dadurch wird die spekulative Ausführung des Zugriffs auf \texttt{array1} verworfen, sodass der Wert an dieser Stelle im weiteren Verlauf des Programms nicht mehr verwendet werden kann.
+	      Die spekulative Ausführung ignoriert jedoch diese Abbruchbedingung, da sie in vorherigen Durchläufen bereits zu keinem Abbruch geführt hat.
 	\item[\textbf{7.}] Nun werden alle 255 möglichen Werte, die sich an der Stelle \texttt{array1[x]} befinden könnten, nacheinander getestet.
 	      Hierfür wird in einer Schleife gemessen, wie lange ein Zugriff auf das Element \texttt{array2[i * 512]} dauert.
 	      Falls sich an der Stelle \texttt{array1[x]} z.B.~der Wert \texttt{4} befunden hat, würde dies bedeuten, dass die spekulative Ausführung das Element \texttt{array2[4 * 512]} in den Cache geladen hat.
 	      Wird nun gemessen, dass der Zugriff auf \texttt{array2[4 * 512]} deutlich schneller ist als der Zugriff auf andere Elemente wie \texttt{array2[0 * 512]} oder \texttt{array2[5 * 512]}, so kann davon ausgegangen werden, dass sich an der Stelle \texttt{array1[x]} der Wert \texttt{4} befunden hat.
-	\item[\textbf{8.}] Der soeben ermittelte Wert wird gespeichert, und der \texttt{x}-Wert um 255 Bytes erhöht.
-	      Dadurch wird im nächsten Durchlauf die nächsten 8 Bytes des Zielbereichs ausgelesen.
-	      Falls die gewünschte Menge an Bytes noch nicht ausgelesen wurde, wird zu \hyperref[itm:spectre_step4]{\underline{Schritt 4}} zurückgekehrt.
+	\item[\textbf{8.}] Der ermittelte Wert wird gespeichert, und der \texttt{x}-Wert um 1 Byte inkrementiert.
+	      Dadurch wird im nächsten Durchlauf das nächste Byte des Zielbereichs ausgelesen.
+	      Falls noch nicht alle gewünschten Bytes ausgelesen wurden, wird zu \hyperref[itm:spectre_step4]{\underline{Schritt 4}} zurückgekehrt.
 \end{itemize}
 
 \subsection{Spectre-V2}
@@ -66,7 +66,7 @@ Die bekannteste Weiterentwicklung ist Spectre-V2~\cite{spec_v2}, die gezielt den
 Seit der ersten Version von Spectre-V2 im Jahr 2018 (SpectreBTB) wurden kontinuierlich neue Varianten und Abwandlungen entwickelt, wie z.B.~Retbleed~\cite{spec_v2_retbleed} aus dem Jahr 2022 oder Training~Solo~\cite{training_solo} aus dem Jahr 2025. \\
 Wie bei Spectre-V1 wird spekulativ Code ausgeführt, der Daten in den Cache lädt, die anschließend über Timing-Angriffe ausgelesen werden können.
 Anstatt jedoch auf die spekulative Ausführung im eigenen Programm zu setzen, nutzt SpectreBTB aus, dass der Branch Prediction Buffer (BPB) zwischen Prozessen geteilt wird.
-Dieser Buffer beinhaltet Daten, die für die Vorhersage von Branches verwendet und während der Programmausführung gesammelt werden.
+Dieser Buffer beinhaltet Daten, die für die Vorhersage von Branches verwendet werden und während der Programmausführung gesammelt werden.
 Wenn die CPU im Programmablauf auf eine Branch trifft, deren Sprungziel noch unklar ist, wird der BPB verwendet, um den wahrscheinlichsten Sprung zu bestimmen und die spekulative Ausführung zu ermöglichen. \\
 Um einen Angriff auszuführen, wird der BPB in unserem Programm so trainiert, dass er zukünftig Branches vorhersagt, die für uns vorteilhaft sind.
 Wenn die CPU anschließend ein anderes Programm ausführt, in dem sich eine Branch mit unbekanntem Sprungziel befindet, wird der BPB verwendet, um den wahrscheinlichsten Sprung zu bestimmen.
@@ -81,7 +81,7 @@ Das Zielprogramm führt anschließend spekulativ das Gadget aus, wodurch Daten i
 
 \subsection{Gegenmaßnahmen}
 \label{subsec:spectre_gegenmassnahmen}
-Gegenmaßnahmen gegen Spectre-V2 wurden auf verschiedenen Ebenen implementiert, wobei zahlreiche Software-Patches veröffentlicht wurden.
+Gegenmaßnahmen gegen Spectre-V2 wurden auf verschiedenen Ebenen umgesetzt, darunter zahlreiche Software-Patches.
 Im Linux-Kernel wurden verschiedene Maßnahmen eingeführt, um zu verhindern, dass sensitive Funktionen spekulativ ausgeführt werden~\cite{linux_nospec}.
 Dies verhindert, dass der Branch Predictor durch Manipulation innerhalb des Kernels Daten über spekulative Ausführung leaken kann.
 Die Funktion \texttt{array\_index\_nospec} kann verwendet werden, um trotz spekulativer Ausführung Zugriffe auf die Bereiche von Arrays zu begrenzen.

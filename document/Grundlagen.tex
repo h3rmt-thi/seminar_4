@@ -1,8 +1,8 @@
 \section{Grundlagen moderner CPU-Architekturen}
 \label{sec:grundlagen-moderner-cpu-architekturen}
-Moderne Prozessoren übertreffen den Arbeitsspeicher (RAM) in ihrer Geschwindigkeit deutlich.
-Mit Taktraten von 5 GHz und mehr sowie mindestens 10 Kernen~\cite{ryzen_9} können sie zahlreiche Befehle ausführen, selbst während sie auf Daten aus dem RAM warten.
-Um diese Lücke zu schließen, nutzen moderne Prozessoren verschiedene Optimierungstechniken, die die Befehlsausführung beschleunigen. \\
+Moderne Prozessoren sind deutlich schneller als der Arbeitsspeicher (RAM).
+Mit Taktraten von 5 GHz und mehr sowie mindestens 10 Kernen~\cite{ryzen_9} können sie hunderte Befehle ausführen, selbst während sie auf Daten aus dem RAM warten müssen.
+Um diese Geschwindigkeitslücke zu überbrücken, nutzen moderne Prozessoren verschiedene Optimierungstechniken, die die Befehlsausführung beschleunigen. \\
 Im Folgenden werden diese Optimierungen erläutert, da sie eine zentrale Rolle bei den beschriebenen Angriffen spielen.
 
 \subsection{Cache}
@@ -10,14 +10,14 @@ Im Folgenden werden diese Optimierungen erläutert, da sie eine zentrale Rolle b
 Um den Zugriff auf häufig benötigte Daten zu beschleunigen, setzen moderne Prozessoren verschiedene Ebenen von Cache-Speicher ein.
 Diese Caches sind direkt in der CPU integriert und bieten deutlich schnelleren Zugriff auf Daten aus dem Arbeitsspeicher (RAM).
 Wird ein benötigter Wert nicht im Cache gefunden (Cache Miss), muss er aus dem langsameren RAM nachgeladen werden.
-Die CPU kopiert dabei die entsprechenden Datenblöcke (Cache Lines) aus dem RAM in den Cache, sodass zukünftige Zugriffe schneller erfolgen können.
-Hierbei wird, falls notwendig, ein Cache-Eintrag überschrieben, sodass der alte Wert verloren geht.
+Die CPU lädt dabei die entsprechenden Datenblöcke (Cache Lines) aus dem RAM in den Cache, um zukünftige Zugriffe zu beschleunigen.
+Falls notwendig, wird ein bestehender Cache-Eintrag überschrieben, wodurch der alte Wert verloren geht.
 
 \subsection{Out-of-Order Execution}
 \label{subsec:out-of-order-execution}
 Moderne Prozessoren können die Reihenfolge der Befehlsausführung während der Programmlaufzeit dynamisch anpassen.
 Wenn ein Befehl auf einen Wert aus dem RAM wartet, würde dies normalerweise dazu führen, dass nachfolgende Befehle blockiert werden, bis der Wert verfügbar ist und der Befehl ausgeführt werden kann.
-Pipelining ist eine Technik, die es ermöglicht, mehrere Befehle parallel zu verarbeiten, indem die Ausführung in verschiedene Phasen wie Laden, Berechnen und Speichern unterteilt wird.
+Pipelining ist die Technik, die es ermöglicht, mehrere Befehle parallel zu verarbeiten, indem die Ausführung in verschiedene Phasen wie Laden, Berechnen und Speichern unterteilt wird.
 Wird beim Laden eines Befehls festgestellt, dass benötigte Werte noch nicht verfügbar sind, wird dieser Befehl in eine Warteschlange verschoben, während andere Befehle, deren Werte bereits verfügbar sind oder keine Abhängigkeit zum blockierenden Befehl haben, geladen und ausgeführt werden können.
 Des Weiteren ist es möglich, unabhängige Befehle, wie zum Beispiel eine Multiplikation und eine Division, die verschiedene funktionale Einheiten der CPU nutzen, gleichzeitig auszuführen.
 Dies ermöglicht eine höhere Auslastung der CPU und dadurch eine schnellere Programmausführung.

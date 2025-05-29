@@ -1,9 +1,9 @@
 \section[Einleitung]{Einleitung}
 \label{sec:einleitung}
 Moderne Prozessoren sind hochkomplexe Systeme, deren Aufgaben weit über simple Befehlsausführung hinausgehen.
-Um Geschwindigkeit zu maximieren, verwenden sie verschiedene Techniken wie Caching, Speculative Ausführung, Out-of-Order Execution und viele weitere Optimierungen.
+Um die Geschwindigkeit zu maximieren, nutzen sie verschiedene Techniken wie Caching, Spekulative Ausführung, Out-of-Order Execution und weitere Optimierungen.
 Da diese Optimierungen jedoch unter Umständen den normalen Programmablauf verändern oder sogar Anweisungen ausführen, die normalerweise nicht ausgeführt worden wären, können sie bei fehlerhafter Implementierung oder unsachgemäßer Handhabung zu Sicherheitslücken führen.\\
-Diese Sicherheitslücken sind besonders gefährlich, da sie oft nicht ausreichend oder nur mit Leistungseinbußen auf Softwareebene behoben werden können, sondern auch Hardwareänderungen erfordern können.
-Spectre und Meltdown sind zwei der bekanntesten Prozessorlücken und auch heute noch relevant, wie  \textbf{CVE-2024-45332}~\cite{cve_2024_45332,bprc_sec25} oder \textbf{Training Solo}~\cite{training_solo} zeigen.
+Diese Sicherheitslücken sind besonders gefährlich, da sie oft nicht vollständig oder nur mit Leistungseinbußen auf Softwareebene behoben werden können und häufig auch Hardwareänderungen erfordern.
+Spectre und Meltdown sind zwei der bekanntesten Prozessorlücken und auch heute noch relevant, wie \textbf{CVE-2024-45332}~\cite{cve_2024_45332,bprc_sec25} oder \textbf{Training Solo}~\cite{training_solo} zeigen.
 Darüber hinaus ermöglichen diese Lücken beispielsweise das Umgehen der Trennung zwischen Kernel- und User-Space oder zwischen verschiedenen virtuellen Maschinen.
-Dies ist besonders gefährlich in Cloud-Umgebungen, da häufig auf einer Hardware mehrere virtuelle Maschinen laufen, die von verschiedenen Benutzern betrieben werden.
+Dies ist besonders kritisch in Cloud-Umgebungen, da auf einer Hardware oft mehrere virtuelle Maschinen laufen, die von unterschiedlichen Usern betrieben werden.
